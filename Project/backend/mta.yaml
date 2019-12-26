@@ -1,0 +1,47 @@
+﻿ID: kar_backend
+_schema-version: 3.1.0
+version: 1.0.0
+
+modules:
+    -
+        name: kar_db
+        type: hdb
+        path: db
+        provides:
+            - {name: kar_db, public: true}
+        parameters:
+            memory: 256M
+            disk-quota: 256M
+        requires:
+            - {name: kar_hdi}
+    -
+        name: kar_srv
+        type: nodejs
+        path: srv
+        properties:
+            XS_APP_LOG_LEVEL: debug
+        parameters:
+            memory: 256M
+            disk-quota: 1024M
+        provides:
+            - {name: kar_srv, public: true, properties: {url: '${default-url}'}}
+        requires:
+            - {name: kar_db}
+            - {name: kar_hdi}
+            - {name: kar_uaa}
+            - {name: kar_dest}
+            - {name: kar_conn}
+
+resources:
+    -
+        name: kar_hdi
+        type: org.cloudfoundry.existing-service
+    -
+        name: kar_uaa
+        type: org.cloudfoundry.existing-service
+    -
+        name: kar_dest
+        type: org.cloudfoundry.existing-service
+    -
+        name: kar_conn
+        type: org.cloudfoundry.existing-service
