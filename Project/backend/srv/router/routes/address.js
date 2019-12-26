@@ -7,8 +7,8 @@ const express = require("express");
 const dbClass = require(global.__base + "utils/dbClass");
 
 
-function _prepareObject(oStudent, req) {
-    return oStudent;
+function _prepareObject(oAddress, req) {
+    return oAddress;
 }
 
 
@@ -17,18 +17,18 @@ module.exports = () => {
 
     app.get("/", async (req, res, next) => {
         const logger = req.loggingContext.getLogger("/Application");
-        logger.info('Student get request');
+        logger.info('Address get request');
         let tracer = req.loggingContext.getTracer(__filename);
-        tracer.entering("/student", req, res);
+        tracer.entering("/address", req, res);
 
         try {
             const db = new dbClass(req.db);
-            const sSql = "SELECT * FROM \"STUDENT\"";
-            const student = await db.executeUpdate(sSql, []);
-            tracer.exiting("/student", "Student Get works");
-            res.type("application/json").status(201).send(JSON.stringify(student));
+            const sSql = "SELECT * FROM \"ADDRESS\"";
+            const address = await db.executeUpdate(sSql, []);
+            tracer.exiting("/address", "Address Get works");
+            res.type("application/json").status(201).send(JSON.stringify(address));
         } catch (e) {
-            tracer.catching("/student", e);
+            tracer.catching("/address", e);
             next(e);
         }
     });
@@ -38,16 +38,16 @@ module.exports = () => {
         try {
             const db = new dbClass(req.db);
 
-            const oStudent = _prepareObject(req.body, req);
-	    oStudent.stid = await db.getNextval("stid");
+            const oAddress = _prepareObject(req.body, req);
+	    oAddress.adid = await db.getNextval("adid");
 
-            const sSql = "INSERT INTO \"STUDENT\" VALUES(?,?)";
-	    const aValues = [ oStudent.stid, oStudent.name ];
+            const sSql = "INSERT INTO \"ADDRESS\" VALUES(?,?,?,?,?)";
+	    const aValues = [ oAddress.adid, oAddress.stid, oAddress.city, oAddress.strt, oAddress.hnum ];
 	    console.log(aValues);
 	    console.log(sSql);
             await db.executeUpdate(sSql, aValues);
 
-            res.type("application/json").status(201).send(JSON.stringify(oStudent));
+            res.type("application/json").status(201).send(JSON.stringify(oAddress));
         } catch (e) {
             next(e);
         }
@@ -57,28 +57,28 @@ module.exports = () => {
         try {
             const db = new dbClass(req.db);
 
-            const oStudent = _prepareObject(req.body, req);
-            const sSql = "UPDATE \"STUDENT\" SET \"NAME\" = ? WHERE \"STID\" = ?";
-	    const aValues = [ oStudent.name, oStudent.stid];
+            const oAddress = _prepareObject(req.body, req);
+            const sSql = "UPDATE \"ADDRESS\" SET \"STID\" = ?, \"CITY\" = ?, \"STRT\" = ?, \"HNUM\" = ? WHERE \"ADID\" = ?";
+	    const aValues = [ oAddress.stid, oAddress.city, oAddress.strt, oAddress.hnum, oAddress.adid];
 
             console.log(aValues);
             console.log(sSql);
             await db.executeUpdate(sSql, aValues);
 
-            res.type("application/json").status(200).send(JSON.stringify(oStudent));
+            res.type("application/json").status(200).send(JSON.stringify(oAddress));
         } catch (e) {
             next(e);
         }
     });
 
-    app.delete("/:stid", async (req, res, next) => {
+    app.delete("/:adid", async (req, res, next) => {
         try {
             const db = new dbClass(req.db);
-            const stid = req.params.stid;
-            console.log(req.params.stid)
+            const adid = req.params.adid;
+            console.log(req.params.adid)
 
-            const sSql = "DELETE FROM \"STUDENT\" WHERE \"STID\" = ?";
-            const aValues = [ stid ];
+            const sSql = "DELETE FROM \"ADDRESS\" WHERE \"ADID\" = ?";
+            const aValues = [ adid ];
 
             console.log(aValues);
             console.log(sSql);
